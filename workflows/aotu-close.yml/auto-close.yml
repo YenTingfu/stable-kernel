@@ -1,0 +1,84 @@
+name: Auto-Close Issues and PRs
+
+on:
+  issues:
+    types: [opened, reopened]
+  pull_request:
+    types: [opened, reopened]
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  auto-close:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Close issue
+        if: github.event_name == 'issues'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              state: "closed",
+            });
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: [
+                "🚫 **Public Issues Are Not Accepted**",
+                "",
+                "This repository is a **concept-only** release of Stable Kernel v1.0.",
+                "",
+                "It contains:",
+                "- philosophical descriptions",
+                "- conceptual architecture",
+                "- diagrams and terminology",
+                "",
+                "There is **no runnable code** and **no public development process**.",
+                "For this reason, issues are automatically closed.",
+                "",
+                "If your inquiry concerns:",
+                "- enterprise collaboration",
+                "- private licensing",
+                "- NDA-based integration",
+                "",
+                "please contact the Author *privately*.",
+                "",
+                "Thank you for understanding."
+              ].join("\n")
+            });
+
+      - name: Close pull request
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+              state: "closed",
+            });
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: [
+                "🚫 **Pull Requests Are Not Accepted**",
+                "",
+                "Stable Kernel v1.0 is a conceptual repository.",
+                "It does not accept code contributions or modifications.",
+                "",
+                "All PRs are auto-closed.",
+                "",
+                "For enterprise or NDA-based discussions,",
+                "please contact the Author through private channels.",
+                "",
+                "Thank you."
+              ].join("\n")
+            });
